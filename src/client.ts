@@ -11,6 +11,7 @@ import {IdentityProviders} from './resources/identityProviders';
 import {Components} from './resources/components';
 import {AxiosRequestConfig} from 'axios';
 import {Authorization} from "./resources/authorization";
+import {ProtectedResource} from "./resources/protectedResource";
 
 export interface ConnectionConfig {
   baseUrl?: string;
@@ -30,6 +31,7 @@ export class KeycloakAdminClient {
   public components: Components;
   public permissions: Permissions;
   public authorization: Authorization;
+  public protectedResource: ProtectedResource;
 
   // Members
   public baseUrl: string;
@@ -56,6 +58,7 @@ export class KeycloakAdminClient {
     this.components = new Components(this);
     this.permissions = new Permissions(this);
     this.authorization = new Authorization(this);
+    this.protectedResource = new ProtectedResource(this);
   }
 
   public async auth(credentials: Credentials) {
