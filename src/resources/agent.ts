@@ -1,6 +1,7 @@
 import urlJoin from 'url-join';
 import template from 'url-template';
 import axios, {AxiosRequestConfig} from 'axios';
+import querystring from 'querystring';
 import {pick, omit, isUndefined, last} from 'lodash';
 import {KeycloakAdminClient} from '../client';
 
@@ -26,6 +27,9 @@ export interface RequestArgs {
   // to represent the newly created resource
   // detail: keycloak/keycloak-nodejs-admin-client issue #11
   returnResourceIdInLocationHeader?: {field: string};
+  // Specify the format of the request body. The default is 'json'. Available options are:
+  // 'json' and 'form'.
+  payloadFormat?: string,
 }
 
 export class Agent {
@@ -62,6 +66,7 @@ export class Agent {
     keyTransform,
     payloadKey,
     returnResourceIdInLocationHeader,
+    payloadFormat,
   }: RequestArgs) {
     return async (payload: any = {}) => {
       const baseParams = this.getBaseParams();
@@ -74,12 +79,17 @@ export class Agent {
       const urlParams = {...baseParams, ...pick(payload, allUrlParamKeys)};
 
       // Omit url parameters and query parameters from payload
-      payload = omit(payload, [...allUrlParamKeys, ...queryParamKeys]);
+      if (Array.isArray(payload)) {
+        payload = payload
+            .map(p => omit(p, [...allUrlParamKeys, ...queryParamKeys]))
+      } else {
+        payload = omit(payload, [...allUrlParamKeys, ...queryParamKeys]);
+      }
 
       // Transform keys of both payload and queryParams
       if (keyTransform) {
-        this.transformKey(payload, keyTransform);
-        this.transformKey(queryParams, keyTransform);
+        this.transformKeys(payload, keyTransform);
+        this.transformKeys(queryParams, keyTransform);
       }
 
       return this.requestWithParams({
@@ -91,6 +101,7 @@ export class Agent {
         catchNotFound,
         payloadKey,
         returnResourceIdInLocationHeader,
+        payloadFormat,
       });
     };
   }
@@ -104,6 +115,7 @@ export class Agent {
     keyTransform,
     payloadKey,
     returnResourceIdInLocationHeader,
+    payloadFormat,
   }: RequestArgs) {
     return async (query: any = {}, payload: any = {}) => {
       const baseParams = this.getBaseParams();
@@ -120,7 +132,7 @@ export class Agent {
 
       // Transform keys of queryParams
       if (keyTransform) {
-        this.transformKey(queryParams, keyTransform);
+        this.transformKeys(queryParams, keyTransform);
       }
 
       return this.requestWithParams({
@@ -132,6 +144,7 @@ export class Agent {
         catchNotFound,
         payloadKey,
         returnResourceIdInLocationHeader,
+        payloadFormat,
       });
     };
   }
@@ -145,6 +158,7 @@ export class Agent {
     catchNotFound,
     payloadKey,
     returnResourceIdInLocationHeader,
+    payloadFormat,
   }: {
     method: string;
     path: string;
@@ -154,6 +168,7 @@ export class Agent {
     catchNotFound: boolean;
     payloadKey?: string;
     returnResourceIdInLocationHeader?: {field: string};
+    payloadFormat: string,
   }) {
     const newPath = urlJoin(this.basePath, path);
 
@@ -168,7 +183,7 @@ export class Agent {
       method,
       url,
       headers: {
-        Authorization: `bearer ${this.client.getAccessToken()}`,
+        Authorization: `bearer ${payload.accessToken? payload.accessToken: this.client.getAccessToken()}`,
       },
     };
 
@@ -177,7 +192,11 @@ export class Agent {
       requestConfig.params = payload;
     } else {
       // Set the request data to the payload, or the value corresponding to the payloadKey, if it's defined
-      requestConfig.data = payloadKey ? payload[payloadKey] : payload;
+      if (!payloadFormat || payloadFormat === 'json') {
+        requestConfig.data = payloadKey ? payload[payloadKey] : payload;
+      } else if (payloadFormat === 'form') {
+        requestConfig.data = querystring.stringify(payload)
+      }
     }
 
     // Concat to existing queryParams
@@ -227,11 +246,19 @@ export class Agent {
     }
   }
 
-  private transformKey(payload: any, keyMapping: Record<string, string>) {
+  private transformKeys(payload: any, keyMapping: Record<string, string>) {
     if (!payload) {
       return;
     }
 
+    if (Array.isArray(payload)) {
+      payload.forEach(p => this.transformKey(p, keyMapping))
+    } else {
+      this.transformKey(payload, keyMapping);
+    }
+  }
+
+  private transformKey(payload: any, keyMapping: Record<string, string>) {
     Object.keys(keyMapping).some(key => {
       if (isUndefined(payload[key])) {
         // Skip if undefined
