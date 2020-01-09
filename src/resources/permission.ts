@@ -23,7 +23,7 @@ export interface PermissionResponse {
     ticket: string
 }
 
-export class Permissions extends Resource<any> {
+export class Permissions extends Resource<{}> {
 
     public find = this.makeRequest<PermissionQuery, PermissionTicketRepresentation[]>({
         method: 'GET',
