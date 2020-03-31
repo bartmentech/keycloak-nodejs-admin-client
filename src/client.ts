@@ -9,9 +9,10 @@ import {Permissions} from './resources/permission';
 import {ClientScopes} from './resources/clientScopes';
 import {IdentityProviders} from './resources/identityProviders';
 import {Components} from './resources/components';
+import {AuthenticationManagement} from './resources/authenticationManagement';
 import {AxiosRequestConfig} from 'axios';
-import {Authorization} from "./resources/authorization";
-import {ProtectedResource} from "./resources/protectedResource";
+import {Authorization} from './resources/authorization';
+import {ProtectedResource} from './resources/protectedResource';
 
 export interface ConnectionConfig {
   baseUrl?: string;
@@ -32,6 +33,7 @@ export class KeycloakAdminClient {
   public permissions: Permissions;
   public authorization: Authorization;
   public protectedResource: ProtectedResource;
+  public authenticationManagement: AuthenticationManagement;
 
   // Members
   public baseUrl: string;
@@ -59,6 +61,7 @@ export class KeycloakAdminClient {
     this.permissions = new Permissions(this);
     this.authorization = new Authorization(this);
     this.protectedResource = new ProtectedResource(this);
+    this.authenticationManagement = new AuthenticationManagement(this);
   }
 
   public async auth(credentials: Credentials) {
