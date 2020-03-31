@@ -37,13 +37,13 @@ export interface ProtectedResource {
 
 export class ProtectedResource extends Resource<{}> {
 
-    public find = this.makeRequest<ResourceQuery, ProtectedResource[]|string[]>({
+    public find = this.makeRequest<ResourceQuery, ProtectedResource[] | string[]>({
         method: 'GET',
         keyTransform: {
             id: '_id',
             firstResult: 'first',
-            maxResult: 'max'
-        }
+            maxResult: 'max',
+        },
     });
 
     constructor(client: KeycloakAdminClient) {
