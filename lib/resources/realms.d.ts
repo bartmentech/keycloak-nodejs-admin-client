@@ -28,5 +28,12 @@ export declare class Realms extends Resource {
         type?: EventType;
         user?: string;
     }) => Promise<EventRepresentation[]>;
+    getUsersManagementPermissions: (payload?: {
+        realm: string;
+    }) => Promise<void>;
+    updateUsersManagementPermissions: (payload?: {
+        realm: string;
+        enabled: boolean;
+    }) => Promise<void>;
     constructor(client: KeycloakAdminClient);
 }

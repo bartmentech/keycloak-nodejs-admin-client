@@ -12,4 +12,5 @@ export default interface RequiredActionProviderRepresentation {
     enabled?: boolean;
     name?: string;
     provider?: string;
+    priority?: number;
 }

@@ -8,9 +8,10 @@ import { Permissions } from './resources/permission';
 import { ClientScopes } from './resources/clientScopes';
 import { IdentityProviders } from './resources/identityProviders';
 import { Components } from './resources/components';
+import { AuthenticationManagement } from './resources/authenticationManagement';
 import { AxiosRequestConfig } from 'axios';
-import { Authorization } from "./resources/authorization";
-import { ProtectedResource } from "./resources/protectedResource";
+import { Authorization } from './resources/authorization';
+import { ProtectedResource } from './resources/protectedResource';
 export interface ConnectionConfig {
     baseUrl?: string;
     realmName?: string;
@@ -28,6 +29,7 @@ export declare class KeycloakAdminClient {
     permissions: Permissions;
     authorization: Authorization;
     protectedResource: ProtectedResource;
+    authenticationManagement: AuthenticationManagement;
     baseUrl: string;
     realmName: string;
     accessToken: string;
