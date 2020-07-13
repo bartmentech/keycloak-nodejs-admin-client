@@ -1,11 +1,12 @@
 import Resource from './resource';
 import {KeycloakAdminClient} from '../client';
+import {TokenResponse} from '../utils/auth';
 
 export interface AuthorizationRequest {
     /**
      * Must be urn:ietf:params:oauth:grant-type:uma-ticket.
      */
-    grant_type: string;
+    grant_type: 'urn:ietf:params:oauth:grant-type:uma-ticket';
 
     /**
      * The most recent permission ticket received by the client as part of the UMA authorization process.
@@ -88,12 +89,13 @@ export interface AuthorizationRequest {
      *
      * If the authorization request does not map to any permission, a 403 HTTP status code is returned instead.
      */
-    response_mode?: string;
+    response_mode?: 'decision' | 'permissions';
 }
 
 export interface PermissionResponseMode {
     rsid: string;
     scopes: string[];
+    rsname: string;
 }
 
 export interface DecisionResponseMode {
@@ -102,7 +104,8 @@ export interface DecisionResponseMode {
 
 export class Authorization extends Resource<{ accessToken: string }> {
 
-    public authorize = this.makeRequest<AuthorizationRequest, PermissionResponseMode | DecisionResponseMode>({
+    public authorize = this.makeRequest<AuthorizationRequest,
+        PermissionResponseMode[] | DecisionResponseMode | TokenResponse>({
         method: 'POST',
         payloadFormat: 'form',
     });

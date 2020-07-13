@@ -1,6 +1,6 @@
 import Resource from './resource';
 import {KeycloakAdminClient} from '../client';
-import {PermissionTicketRepresentation} from "../defs/permissionTicketRepresentation";
+import {PermissionTicketRepresentation} from '../defs/permissionTicketRepresentation';
 
 export interface PermissionQuery {
     resourceId?: string;
@@ -27,7 +27,7 @@ export class Permissions extends Resource<{}> {
 
     public find = this.makeRequest<PermissionQuery, PermissionTicketRepresentation[]>({
         method: 'GET',
-        path: '/ticket'
+        path: '/ticket',
     });
 
     public request = this.makeRequest<PermissionRequest[], PermissionResponse>({
@@ -35,7 +35,7 @@ export class Permissions extends Resource<{}> {
         keyTransform: {
             resourceId: 'resource_id',
             scopes: 'resource_scopes',
-            resourceServerId: 'resource_server_id'
+            resourceServerId: 'resource_server_id',
         }
     });
 
