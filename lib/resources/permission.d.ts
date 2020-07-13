@@ -1,6 +1,6 @@
 import Resource from './resource';
 import { KeycloakAdminClient } from '../client';
-import { PermissionTicketRepresentation } from "../defs/permissionTicketRepresentation";
+import { PermissionTicketRepresentation } from '../defs/permissionTicketRepresentation';
 export interface PermissionQuery {
     resourceId?: string;
     scopeId?: string;
