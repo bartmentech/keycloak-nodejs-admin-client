@@ -14,13 +14,13 @@ export interface PermissionQuery {
 }
 
 export interface PermissionRequest {
-    resourceId: string,
-    scopes: string[],
-    resourceServerId?: string,
+    resourceId: string;
+    scopes: string[];
+    resourceServerId?: string;
 }
 
 export interface PermissionResponse {
-    ticket: string
+    ticket: string;
 }
 
 export class Permissions extends Resource<{}> {
@@ -30,13 +30,18 @@ export class Permissions extends Resource<{}> {
         path: '/ticket',
     });
 
-    public request = this.makeRequest<PermissionRequest[], PermissionResponse>({
+    public create = this.makeRequest<PermissionRequest[], PermissionResponse>({
         method: 'POST',
         keyTransform: {
             resourceId: 'resource_id',
             scopes: 'resource_scopes',
             resourceServerId: 'resource_server_id',
-        }
+        },
+    });
+
+    public createTicket = this.makeRequest<PermissionTicketRepresentation, PermissionTicketRepresentation>({
+        method: 'POST',
+        path: '/ticket',
     });
 
     constructor(client: KeycloakAdminClient) {
