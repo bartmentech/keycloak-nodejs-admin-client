@@ -21,6 +21,7 @@ export interface PermissionResponse {
 }
 export declare class Permissions extends Resource<{}> {
     find: (payload?: PermissionQuery) => Promise<PermissionTicketRepresentation[]>;
-    request: (payload?: PermissionRequest[]) => Promise<PermissionResponse>;
+    create: (payload?: PermissionRequest[]) => Promise<PermissionResponse>;
+    createTicket: (payload?: PermissionTicketRepresentation) => Promise<PermissionTicketRepresentation>;
     constructor(client: KeycloakAdminClient);
 }
