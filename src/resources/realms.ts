@@ -10,6 +10,7 @@ import TestLdapConnectionRepresentation from '../defs/testLdapConnection';
 import {KeycloakAdminClient} from '../client';
 import {RealmEventsConfigRepresentation} from '../defs/realmEventsConfigRepresentation';
 import ComponentRepresentation from '../defs/componentRepresentation';
+import GlobalRequestResult from '../defs/globalRequestResult';
 
 export class Realms extends Resource {
   /**
@@ -51,19 +52,16 @@ export class Realms extends Resource {
 
   public export = this.makeRequest<
     {
-      realm: string,
-      exportClients?: boolean,
-      exportGroupsAndRoles?: boolean,
+      realm: string;
+      exportClients?: boolean;
+      exportGroupsAndRoles?: boolean;
     },
     RealmRepresentation
   >({
     method: 'POST',
     path: '/{realm}/partial-export',
     urlParamKeys: ['realm'],
-    queryParamKeys: [
-      'exportClients',
-      'exportGroupsAndRoles',
-    ],
+    queryParamKeys: ['exportClients', 'exportGroupsAndRoles'],
   });
 
   /**
@@ -78,7 +76,7 @@ export class Realms extends Resource {
       first?: number;
       ipAddress?: string;
       max?: number;
-      type?: EventType;
+      type?: EventType | EventType[];
       user?: string;
     },
     EventRepresentation[]
@@ -98,13 +96,20 @@ export class Realms extends Resource {
     ],
   });
 
-  public getConfigEvents = this.makeRequest<{realm: string}, RealmEventsConfigRepresentation>({
+  public getConfigEvents = this.makeRequest<
+    {realm: string},
+    RealmEventsConfigRepresentation
+  >({
     method: 'GET',
     path: '/{realm}/events/config',
     urlParamKeys: ['realm'],
   });
 
-  public updateConfigEvents = this.makeUpdateRequest<{realm: string}, RealmEventsConfigRepresentation, void>({
+  public updateConfigEvents = this.makeUpdateRequest<
+    {realm: string},
+    RealmEventsConfigRepresentation,
+    void
+  >({
     method: 'PUT',
     path: '/{realm}/events/config',
     urlParamKeys: ['realm'],
@@ -142,7 +147,8 @@ export class Realms extends Resource {
   });
 
   public delClientsInitialAccess = this.makeRequest<
-    {realm: string, id: string}, void
+    {realm: string; id: string},
+    void
   >({
     method: 'DELETE',
     path: '/{realm}/clients-initial-access/{id}',
@@ -239,6 +245,16 @@ export class Realms extends Resource {
     urlParamKeys: ['realm', 'session'],
   });
 
+  public pushRevocation = this.makeRequest<
+    {realm: string},
+    GlobalRequestResult
+  >({
+    method: 'POST',
+    path: '/{realm}/push-revocation',
+    urlParamKeys: ['realm'],
+    ignoredKeys: ['realm'],
+  });
+
   public getKeys = this.makeRequest<
     {realm: string},
     KeysMetadataRepresentation
@@ -248,13 +264,19 @@ export class Realms extends Resource {
     urlParamKeys: ['realm'],
   });
 
-  public testLDAPConnection = this.makeUpdateRequest<{realm: string}, TestLdapConnectionRepresentation>({
+  public testLDAPConnection = this.makeUpdateRequest<
+    {realm: string},
+    TestLdapConnectionRepresentation
+  >({
     method: 'POST',
     path: '/{realm}/testLDAPConnection',
     urlParamKeys: ['realm'],
   });
 
-  public testSMTPConnection = this.makeUpdateRequest<{realm: string}, Record<string, string | number>>({
+  public testSMTPConnection = this.makeUpdateRequest<
+    {realm: string},
+    Record<string, string | number>
+  >({
     method: 'POST',
     path: '/{realm}/testSMTPConnection',
     urlParamKeys: ['realm'],
@@ -266,19 +288,29 @@ export class Realms extends Resource {
     urlParamKeys: ['realm'],
   });
 
-  public getRealmLocalizationTexts = this.makeRequest<{realm: string, selectedLocale: string}, Record<string, string>>({
+  public getRealmLocalizationTexts = this.makeRequest<
+    {realm: string; selectedLocale: string},
+    Record<string, string>
+  >({
     method: 'GET',
     path: '/{realm}/localization/{selectedLocale}',
     urlParamKeys: ['realm', 'selectedLocale'],
   });
 
-  public addLocalization = this.makeUpdateRequest<{realm: string, selectedLocale: string, key: string}, string, void>({
+  public addLocalization = this.makeUpdateRequest<
+    {realm: string; selectedLocale: string; key: string},
+    string,
+    void
+  >({
     method: 'PUT',
     path: '/{realm}/localization/{selectedLocale}/{key}',
     urlParamKeys: ['realm', 'selectedLocale', 'key'],
   });
 
-  public deleteRealmLocalizationTexts = this.makeRequest<{realm: string, selectedLocale: string, key?: string}, void>({
+  public deleteRealmLocalizationTexts = this.makeRequest<
+    {realm: string; selectedLocale: string; key?: string},
+    void
+  >({
     method: 'DELETE',
     path: '/{realm}/localization/{selectedLocale}/{key}',
     urlParamKeys: ['realm', 'selectedLocale', 'key'],

@@ -1,6 +1,7 @@
 import urlJoin from 'url-join';
 import template from 'url-template';
 import axios, {AxiosRequestConfig, Method} from 'axios';
+import querystring from 'query-string';
 import {pick, omit, isUndefined, last} from 'lodash';
 import {KeycloakAdminClient} from '../client';
 
@@ -26,6 +27,10 @@ export interface RequestArgs {
   // to represent the newly created resource
   // detail: keycloak/keycloak-nodejs-admin-client issue #11
   returnResourceIdInLocationHeader?: {field: string};
+  /**
+   * Keys to be ignored, meaning that they will not be filtered out of the request payload even if they are a part of `urlParamKeys` or `queryParamKeys`,
+   */
+  ignoredKeys?: string[];
 }
 
 export class Agent {
@@ -60,6 +65,7 @@ export class Agent {
     keyTransform,
     payloadKey,
     returnResourceIdInLocationHeader,
+    ignoredKeys,
   }: RequestArgs) {
     return async (payload: any = {}) => {
       const baseParams = this.getBaseParams();
@@ -72,7 +78,13 @@ export class Agent {
       const urlParams = {...baseParams, ...pick(payload, allUrlParamKeys)};
 
       // Omit url parameters and query parameters from payload
-      payload = omit(payload, [...allUrlParamKeys, ...queryParamKeys]);
+      const omittedKeys = ignoredKeys
+        ? [...allUrlParamKeys, ...queryParamKeys].filter(
+            (key) => !ignoredKeys.includes(key),
+          )
+        : [...allUrlParamKeys, ...queryParamKeys];
+
+      payload = omit(payload, omittedKeys);
 
       // Transform keys of both payload and queryParams
       if (keyTransform) {
@@ -162,7 +174,8 @@ export class Agent {
 
     // Prepare request config
     const requestConfig: AxiosRequestConfig = {
-      ...this.client.getRequestConfig() || {},
+      paramsSerializer: (params) => querystring.stringify(params),
+      ...(this.client.getRequestConfig() || {}),
       method,
       url,
     };

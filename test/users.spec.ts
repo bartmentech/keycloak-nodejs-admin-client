@@ -80,18 +80,17 @@ describe('Users', function () {
   });
 
   it('count users with filter', async () => {
-    const numUsers = await kcAdminClient.users.count({email: 'wwwy3y3@canner.io'});
+    const numUsers = await kcAdminClient.users.count({
+      email: 'wwwy3y3@canner.io',
+    });
+    expect(numUsers).to.equal(1);
+  });
 
-    if (process.env.KEYCLOAK_VERSION
-      && (
-        process.env.KEYCLOAK_VERSION.startsWith('7.')
-        || process.env.KEYCLOAK_VERSION.startsWith('8.')
-      )) {
-      // should be 1, but it seems it doesn't work issue: KEYCLOAK-16081
-      expect(numUsers).to.equal(2);
-    } else {
-      expect(numUsers).to.equal(1);
-    }
+  it('find users by custom attributes', async function () {
+    // Searching by attributes is only available from Keycloak > 15
+    const users = await kcAdminClient.users.find({key: 'value'});
+    expect(users.length).to.be.equal(2);
+    expect(users[0]).to.be.deep.include(currentUser);
   });
 
   it('find users by custom attributes', async function() {
@@ -150,22 +149,6 @@ describe('Users', function () {
   });
 
   /**
-   * remove totp
-   */
-
-  it('should remove totp', async function () {
-    if (process.env.KEYCLOAK_VERSION && process.env.KEYCLOAK_VERSION.startsWith('7.')) {
-      // todo: find a way to add totp from api
-      const userId = currentUser.id;
-      await kcAdminClient.users.removeTotp({
-        id: userId,
-      });
-    } else {
-      this.skip();
-    }
-  });
-
-  /**
    * reset password
    */
 
@@ -211,9 +194,11 @@ describe('Users', function () {
     after(async () => {
       const groupId = currentGroup.id;
       const groups = await kcAdminClient.groups.find({max: 100});
-      await Promise.all(groups.map((_group: GroupRepresentation) => {
-        return kcAdminClient.groups.del({id: _group.id});
-      }));
+      await Promise.all(
+        groups.map((_group: GroupRepresentation) => {
+          return kcAdminClient.groups.del({id: _group.id});
+        }),
+      );
 
       const group = await kcAdminClient.groups.findOne({
         id: groupId,
@@ -222,10 +207,15 @@ describe('Users', function () {
     });
 
     it('add group', async () => {
-      let count = (await kcAdminClient.users.countGroups({id: currentUser.id})).count;
+      let count = (await kcAdminClient.users.countGroups({id: currentUser.id}))
+        .count;
       expect(count).to.eq(0);
-      await kcAdminClient.users.addToGroup({groupId: currentGroup.id, id: currentUser.id});
-      count = (await kcAdminClient.users.countGroups({id: currentUser.id})).count;
+      await kcAdminClient.users.addToGroup({
+        groupId: currentGroup.id,
+        id: currentUser.id,
+      });
+      count = (await kcAdminClient.users.countGroups({id: currentUser.id}))
+        .count;
       expect(count).to.eq(1);
     });
 
@@ -233,10 +223,20 @@ describe('Users', function () {
       let {count} = await kcAdminClient.users.countGroups({id: currentUser.id});
       expect(count).to.eq(1);
 
-      count = (await kcAdminClient.users.countGroups({id: currentUser.id, search: 'cool-group'})).count;
+      count = (
+        await kcAdminClient.users.countGroups({
+          id: currentUser.id,
+          search: 'cool-group',
+        })
+      ).count;
       expect(count).to.eq(1);
 
-      count = (await kcAdminClient.users.countGroups({id: currentUser.id, search: 'fake-group'})).count;
+      count = (
+        await kcAdminClient.users.countGroups({
+          id: currentUser.id,
+          search: 'fake-group',
+        })
+      ).count;
       expect(count).to.eq(0);
     });
 
@@ -249,25 +249,38 @@ describe('Users', function () {
 
     it('remove group', async () => {
       const newGroup = await kcAdminClient.groups.create({name: 'test-group'});
-      await kcAdminClient.users.addToGroup({id: currentUser.id, groupId: newGroup.id});
-      let count = (await kcAdminClient.users.countGroups({id: currentUser.id})).count;
+      await kcAdminClient.users.addToGroup({
+        id: currentUser.id,
+        groupId: newGroup.id,
+      });
+      let count = (await kcAdminClient.users.countGroups({id: currentUser.id}))
+        .count;
       expect(count).to.eq(2);
 
       try {
-        await kcAdminClient.users.delFromGroup({id: currentUser.id, groupId: newGroup.id});
+        await kcAdminClient.users.delFromGroup({
+          id: currentUser.id,
+          groupId: newGroup.id,
+        });
       } catch (e) {
-        fail('Didn\'t expect an error when deleting a vaiid group id');
+        fail("Didn't expect an error when deleting a valid group id");
       }
 
-      count = (await kcAdminClient.users.countGroups({id: currentUser.id})).count;
+      count = (await kcAdminClient.users.countGroups({id: currentUser.id}))
+        .count;
       expect(count).to.equal(1);
 
       await kcAdminClient.groups.del({id: newGroup.id});
 
       // delete a non-existing group should throw an error
       try {
-        await kcAdminClient.users.delFromGroup({id: currentUser.id, groupId: 'fake-group-id'});
-        fail('Expected an error when deleting a fake id not assigned to the user');
+        await kcAdminClient.users.delFromGroup({
+          id: currentUser.id,
+          groupId: 'fake-group-id',
+        });
+        fail(
+          'Expected an error when deleting a fake id not assigned to the user',
+        );
       } catch (e) {
         expect(e).to.be.ok;
       }
@@ -324,7 +337,7 @@ describe('Users', function () {
         id: currentUser.id,
       });
 
-      expect(res).have.all.keys('realmMappings', 'clientMappings');
+      expect(res).have.all.keys('realmMappings');
     });
 
     it('list realm role-mappings of user', async () => {
@@ -545,6 +558,15 @@ describe('Users', function () {
         });
       }
     });
+
+    it('impersonate user', async () => {
+      const result = await kcAdminClient.users.impersonation(
+        {id: currentUser.id},
+        {user: currentUser.id, realm: kcAdminClient.realmName},
+      );
+      expect(result).to.be.ok;
+      await kcAdminClient.auth(credentials);
+    });
   });
 
   describe('Federated Identity user integration', () => {
@@ -559,7 +581,7 @@ describe('Users', function () {
       };
     });
 
-    it('should list user\'s federated identities and expect empty', async () => {
+    it('should list user federated identities and expect empty', async () => {
       const federatedIdentities = await kcAdminClient.users.listFederatedIdentities(
         {
           id: currentUser.id,
