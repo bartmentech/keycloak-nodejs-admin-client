@@ -20,11 +20,11 @@ export interface UserQuery {
   max?: number;
   search?: string;
   username?: string;
-  [key: string]: string | number | undefined;
+  q?: string;
 }
 
 export class Users extends Resource<{realm?: string}> {
-  public find = this.makeRequest<UserQuery & {[key: string]: string | number}, UserRepresentation[]>({
+  public find = this.makeRequest<UserQuery, UserRepresentation[]>({
     method: 'GET',
   });
 
