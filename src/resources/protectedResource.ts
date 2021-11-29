@@ -6,8 +6,8 @@ export interface ResourceQuery {
     name?: string;
     uri?: string;
     owner?: string;
-    type?: boolean;
-    scope?: boolean;
+    type?: string;
+    scope?: string;
     matchingUri?: boolean;
     /**
      * If true, the whole ProtectedResource representation will be returned, if false
@@ -19,20 +19,20 @@ export interface ResourceQuery {
 }
 
 export interface ResourceOwner {
-    id: string,
-    name: string
+    id: string;
+    name: string;
 }
 
 export interface ProtectedResource {
-    id: string,
-    uris: string[],
-    type: string,
-    scopes: string[],
-    icon_uri: string,
-    owner: ResourceOwner,
-    ownerManagedAccess: boolean,
-    displayName: string
-    attributes?: any,
+    id: string;
+    uris: string[];
+    type: string;
+    scopes: string[];
+    icon_uri: string;
+    owner: ResourceOwner;
+    ownerManagedAccess: boolean;
+    displayName: string;
+    attributes?: any;
 }
 
 export class ProtectedResource extends Resource<{}> {

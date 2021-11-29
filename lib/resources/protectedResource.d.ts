@@ -5,8 +5,8 @@ export interface ResourceQuery {
     name?: string;
     uri?: string;
     owner?: string;
-    type?: boolean;
-    scope?: boolean;
+    type?: string;
+    scope?: string;
     matchingUri?: boolean;
     deep?: boolean;
     firstResult?: number;
